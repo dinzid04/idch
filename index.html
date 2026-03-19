@@ -26,34 +26,38 @@
     </div>
     <script>
         async function getKode() {
-            const nomor = document.getElementById('nomor').value;
-            const hasil = document.getElementById('hasil');
-            const loading = document.getElementById('loading');
-            
-            if (!nomor) return alert('Nomor harus diisi!');
-            
-            hasil.innerHTML = '';
-            loading.style.display = 'block';
+    const nomor = document.getElementById('nomor').value;
+    const hasil = document.getElementById('hasil');
+    const loading = document.getElementById('loading');
+    
+    if (!nomor) return alert('Nomor harus diisi!');
+    
+    hasil.innerHTML = '';
+    loading.style.display = 'block';
 
-            try {
-                const res = await fetch('http://172.67.207.33:2413/api/pairing', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nomor })
-                });
-                const data = await res.json();
-                
-                loading.style.display = 'none';
-                if (data.status) {
-                    hasil.innerHTML = data.code;
-                } else {
-                    hasil.innerHTML = 'Error: ' + data.msg;
-                }
-            } catch (e) {
-                loading.style.display = 'none';
-                hasil.innerHTML = 'Koneksi ke panel gagal';
-            }
+    try {
+        // GANTI IP DI BAWAH INI PAKAI HASIL DARI curl ifconfig.me TADI
+        const res = await fetch('http://172.232.226.13:2413/api/pairing', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ nomor })
+        });
+        const data = await res.json();
+        
+        loading.style.display = 'none';
+        if (data.status) {
+            hasil.innerHTML = data.code;
+        } else {
+            hasil.innerHTML = 'Error: ' + data.msg;
         }
+    } catch (e) {
+        loading.style.display = 'none';
+        hasil.innerHTML = 'Koneksi ke panel gagal';
+        console.error(e);
+    }
+}
     </script>
 </body>
 </html>
