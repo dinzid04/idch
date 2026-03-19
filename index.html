@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HuTao MD - Jadibot</title>
+    <style>
+        body { font-family: sans-serif; background: #1a1a2e; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .box { background: #16213e; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); text-align: center; width: 320px; }
+        h2 { color: #e94560; margin-top: 0; }
+        input { width: 100%; padding: 12px; margin: 20px 0; border: none; border-radius: 6px; box-sizing: border-box; background: #0f3460; color: white; font-size: 16px; }
+        button { width: 100%; padding: 12px; background: #e94560; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.3s; }
+        button:hover { background: #ff2e63; }
+        #hasil { margin-top: 25px; font-size: 28px; font-weight: bold; letter-spacing: 4px; color: #00e676; }
+        .loading { display: none; margin-top: 15px; font-size: 14px; color: #ccc; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>HuTao MD Cloner</h2>
+        <p>Masukkan nomor awalan 62</p>
+        <input type="number" id="nomor" placeholder="628xxx">
+        <button onclick="getKode()">Minta Kode</button>
+        <div class="loading" id="loading">Memproses ke server...</div>
+        <div id="hasil"></div>
+    </div>
+    <script>
+        async function getKode() {
+            const nomor = document.getElementById('nomor').value;
+            const hasil = document.getElementById('hasil');
+            const loading = document.getElementById('loading');
+            
+            if (!nomor) return alert('Nomor harus diisi!');
+            
+            hasil.innerHTML = '';
+            loading.style.display = 'block';
+
+            try {
+                const res = await fetch('/api/pairing', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nomor })
+                });
+                const data = await res.json();
+                
+                loading.style.display = 'none';
+                if (data.status) {
+                    hasil.innerHTML = data.code;
+                } else {
+                    hasil.innerHTML = 'Error: ' + data.msg;
+                }
+            } catch (e) {
+                loading.style.display = 'none';
+                hasil.innerHTML = 'Koneksi ke panel gagal';
+            }
+        }
+    </script>
+</body>
+</html>
