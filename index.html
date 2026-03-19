@@ -36,14 +36,17 @@
     loading.style.display = 'block';
 
     try {
-        // GANTI IP DI BAWAH INI PAKAI HASIL DARI curl ifconfig.me TADI
         const res = await fetch('http://172.232.226.13:2413/api/pairing', {
             method: 'POST',
             headers: { 
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
             body: JSON.stringify({ nomor })
         });
+        
+        if (!res.ok) throw new Error('Server balikkan error');
+        
         const data = await res.json();
         
         loading.style.display = 'none';
@@ -55,7 +58,7 @@
     } catch (e) {
         loading.style.display = 'none';
         hasil.innerHTML = 'Koneksi ke panel gagal';
-        console.error(e);
+        console.log(e);
     }
 }
     </script>
