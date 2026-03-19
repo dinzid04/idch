@@ -36,7 +36,7 @@
             loading.style.display = 'block';
 
             try {
-                const res = await fetch('/api/pairing', {
+                const res = await fetch('http://172.67.207.33:2413/api/pairing', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ nomor })
