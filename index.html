@@ -4,63 +4,101 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HuTao MD - Jadibot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: sans-serif; background: #1a1a2e; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .box { background: #16213e; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); text-align: center; width: 320px; }
-        h2 { color: #e94560; margin-top: 0; }
-        input { width: 100%; padding: 12px; margin: 20px 0; border: none; border-radius: 6px; box-sizing: border-box; background: #0f3460; color: white; font-size: 16px; }
-        button { width: 100%; padding: 12px; background: #e94560; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.3s; }
-        button:hover { background: #ff2e63; }
-        #hasil { margin-top: 25px; font-size: 28px; font-weight: bold; letter-spacing: 4px; color: #00e676; }
-        .loading { display: none; margin-top: 15px; font-size: 14px; color: #ccc; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #0b0f1c; color: white; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1.5rem; }
+        .card { background: rgba(18, 22, 40, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 2rem; padding: 2.5rem; text-align: center; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5); width: 100%; max-width: 450px; }
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; color: #fff; }
+        .sub { color: #94a3b8; margin-bottom: 2rem; font-size: 0.9rem; }
+        .input-box { position: relative; margin-bottom: 1.5rem; }
+        .input-box i { position: absolute; left: 1.2rem; top: 50%; transform: translateY(-50%); color: #4f46e5; }
+        .input-box input { width: 100%; padding: 1.2rem 1.2rem 1.2rem 3.5rem; background: #101629; border: 2px solid #2d334f; border-radius: 1.2rem; color: white; font-size: 1.1rem; outline: none; }
+        .input-box input:focus { border-color: #4f46e5; }
+        .btn { width: 100%; padding: 1.2rem; background: linear-gradient(145deg, #4f46e5, #7c3aed); border: none; border-radius: 1.2rem; color: white; font-weight: 700; font-size: 1.1rem; cursor: pointer; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .status-card { margin-top: 1.5rem; padding: 1.5rem; background: #101629; border-radius: 1.2rem; border: 1px solid #2d334f; display: none; }
+        .code-display { font-size: 2.2rem; font-weight: 800; letter-spacing: 5px; color: #818cf8; margin-top: 10px; font-family: monospace; display: none; }
     </style>
 </head>
 <body>
-    <div class="box">
-        <h2>HuTao MD Cloner</h2>
-        <p>Masukkan nomor awalan 62</p>
-        <input type="number" id="nomor" placeholder="628xxx">
-        <button onclick="getKode()">Minta Kode</button>
-        <div class="loading" id="loading">Memproses ke server...</div>
-        <div id="hasil"></div>
+    <div class="card">
+        <h1>HuTao MD Cloner</h1>
+        <p class="sub">Masukkan nomor WhatsApp (contoh: 628xxx)</p>
+        <div class="input-box">
+            <i class="fas fa-phone"></i>
+            <input type="number" id="nomor" placeholder="628123456789">
+        </div>
+        <button class="btn" id="btn" onclick="mintaKode()">Minta Kode Pairing</button>
+        <div class="status-card" id="statusCard">
+            <h3 id="statusTitle" style="color:#818cf8; margin-bottom:8px;">Menunggu</h3>
+            <p id="statusMsg" style="font-size:0.9rem; color:#94a3b8;">Memproses ke server...</p>
+            <div class="code-display" id="codeDisplay">----</div>
+        </div>
     </div>
-    <script>
-        async function getKode() {
-    const nomor = document.getElementById('nomor').value;
-    const hasil = document.getElementById('hasil');
-    const loading = document.getElementById('loading');
-    
-    if (!nomor) return alert('Nomor harus diisi!');
-    
-    hasil.innerHTML = '';
-    loading.style.display = 'block';
 
-    try {
-        const res = await fetch('http://172.232.226.13:2413/api/pairing', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ nomor })
-        });
-        
-        if (!res.ok) throw new Error('Server balikkan error');
-        
-        const data = await res.json();
-        
-        loading.style.display = 'none';
-        if (data.status) {
-            hasil.innerHTML = data.code;
-        } else {
-            hasil.innerHTML = 'Error: ' + data.msg;
+    <script>
+        let intervalCek;
+
+        async function mintaKode() {
+            const nomor = document.getElementById('nomor').value.replace(/\D/g, '');
+            const btn = document.getElementById('btn');
+            const statusCard = document.getElementById('statusCard');
+            const statusTitle = document.getElementById('statusTitle');
+            const statusMsg = document.getElementById('statusMsg');
+            const codeDisplay = document.getElementById('codeDisplay');
+
+            if (!nomor) return alert('Nomor harus diisi!');
+
+            btn.disabled = true;
+            btn.innerText = 'Memproses...';
+            statusCard.style.display = 'block';
+            codeDisplay.style.display = 'none';
+            statusTitle.innerText = 'Menunggu';
+            statusMsg.innerText = 'Bot sedang menyiapkan kode...';
+
+            try {
+                const res = await fetch('http://172.232.226.13:3000/api/pairing', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nomor })
+                });
+                const data = await res.json();
+
+                if (data.status) {
+                    if (intervalCek) clearInterval(intervalCek);
+                    intervalCek = setInterval(() => cekStatus(nomor), 3000);
+                } else {
+                    alert('Gagal: ' + data.msg);
+                    btn.disabled = false;
+                    btn.innerText = 'Minta Kode Pairing';
+                }
+            } catch (e) {
+                alert('Koneksi ke server gagal!');
+                btn.disabled = false;
+                btn.innerText = 'Minta Kode Pairing';
+            }
         }
-    } catch (e) {
-        loading.style.display = 'none';
-        hasil.innerHTML = 'Koneksi ke panel gagal';
-        console.log(e);
-    }
-}
+
+        async function cekStatus(nomor) {
+            try {
+                const res = await fetch(`http://172.232.226.13:3000/api/pairing/status/${nomor}`);
+                const data = await res.json();
+
+                if (data.status && data.code) {
+                    clearInterval(intervalCek);
+                    document.getElementById('statusTitle').innerText = 'Kode Pairing Siap';
+                    document.getElementById('statusMsg').innerText = 'Masukkan kode ini di WhatsApp:';
+                    document.getElementById('codeDisplay').innerText = data.code;
+                    document.getElementById('codeDisplay').style.display = 'block';
+                    document.getElementById('btn').disabled = false;
+                    document.getElementById('btn').innerText = 'Minta Ulang';
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
     </script>
 </body>
 </html>
