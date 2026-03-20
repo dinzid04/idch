@@ -1,0 +1,70 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and pairing limits",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "photoURL": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "description": "Remaining pairing requests for today"
+        },
+        "lastResetDate": {
+          "type": "string",
+          "description": "Date string YYYY-MM-DD of the last reset"
+        }
+      },
+      "required": [
+        "email",
+        "limit",
+        "lastResetDate"
+      ]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "Popup notification settings",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "imageURL": { "type": "string" },
+        "showOnlineCount": { "type": "boolean" },
+        "isActive": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/User"
+      },
+      "description": "Stores user profiles and their daily limits"
+    },
+    "/notifications/{notificationId}": {
+      "schema": {
+        "$ref": "#/entities/Notification"
+      },
+      "description": "List of popup notifications"
+    },
+    "/presence/{userId}": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "lastSeen": { "type": "number" }
+        }
+      },
+      "description": "Tracks user presence for online count"
+    }
+  }
+}
